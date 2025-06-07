@@ -20,32 +20,20 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
-          hugo-version: '0.123.7'  # 使用你的 Hugo 版本
+          hugo-version: '0.123.7'  # 替换为你的实际版本
           extended: true
 
       # 3. 构建网站
       - name: Build
         run: hugo --minify
 
-      # 4. 配置 SSH 密钥
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      # 4. 使用 GitHub Pages Action 部署
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          ssh-private-key: ${{ secrets.DEPLOY_TOKEN }}
-
-      # 5. 配置 Git
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@users.noreply.github.com"
-          git config --global core.sshCommand "ssh -i ~/.ssh/github-actions"
-
-      # 6. 部署到 GitHub Pages
-      - name: Deploy
-        run: |
-          cd public
-          git init
-          git remote add origin git@github.com:FarsightLi/FarsightLi.github.io.git
-          git add .
-          git commit -m "Deploy from GitHub Actions"
-          git push -f origin main
+          deploy_key: ${{ secrets.DEPLOY_TOKEN }}  # 你的私钥
+          publish_dir: ./public                    # Hugo 的输出目录
+          full_commit_message: Deploy from GitHub Actions (commit ${{ github.sha }})
+          publish_branch: main                     # 用户页仓库的分支
+          user_name: GitHub Actions
+          user_email: actions@users.noreply.github.com
