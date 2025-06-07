@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="通过模仿grep工具来快速入门go语言">
+<title>五天速通go(一)--搭建mini-grep</title>
+
+<link rel='canonical' href='http://localhost:1313/%E4%BA%94%E5%A4%A9%E9%80%9F%E9%80%9Ago%E4%B8%80--%E6%90%AD%E5%BB%BAmini-grep/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="五天速通go(一)--搭建mini-grep">
+<meta property='og:description' content="通过模仿grep工具来快速入门go语言">
+<meta property='og:url' content='http://localhost:1313/%E4%BA%94%E5%A4%A9%E9%80%9F%E9%80%9Ago%E4%B8%80--%E6%90%AD%E5%BB%BAmini-grep/'>
+<meta property='og:site_name' content='Example Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Page' /><meta property='article:tag' content='Go' /><meta property='article:tag' content='项目实战' /><meta property='article:published_time' content='2025-05-01T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-05-01T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="五天速通go(一)--搭建mini-grep">
+<meta name="twitter:description" content="通过模仿grep工具来快速入门go语言">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_huda2458f72ce188392d75c5d51cd8e24e_373_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🍥</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Example Site</a></h1>
+            <h2 class="site-description">Example description</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="http://localhost:1313/" selected>English</option>
+                                
+                                    <option value="http://localhost:1313/zh-cn/" >中文</option>
+                                
+                                    <option value="http://localhost:1313/ar/" >عربي</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a></li>
+    <li><a href="#正文">正文</a>
+      <ol>
+        <li><a href="#grep命令简介">grep命令简介</a></li>
+        <li><a href="#搭建基本框架">搭建基本框架</a></li>
+        <li><a href="#初步重构完成功能">初步重构，完成功能</a></li>
+        <li><a href="#添加单元测试">添加单元测试</a></li>
+        <li><a href="#打包为可执行文件">打包为可执行文件</a></li>
+      </ol>
+    </li>
+    <li><a href="#总结">总结</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/go/" >
+                Go
+            </a>
+        
+            <a href="/categories/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/" >
+                项目实战
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/%E4%BA%94%E5%A4%A9%E9%80%9F%E9%80%9Ago%E4%B8%80--%E6%90%AD%E5%BB%BAmini-grep/">五天速通go(一)--搭建mini-grep</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            通过模仿grep工具来快速入门go语言
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">May 01, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    5 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="前言">前言
+</h2><p>笔者有两年Java开发经验，目前需要临时用go语言开发一些功能，为了快速入手Go语言，在简单了解基础语法后，决定以实战来巩固知识。</p>
+<p>参考了《Rust圣经》的思路，决定先开发一个模仿grep的工具，来快速巩固基础语法、Go项目管理。</p>
+<p>为精简内容，本系列不包含环境搭建等基础部分（网上教程写的更清楚详细），直接讲解开发思路。希望能对后来者提供一些入门思路。</p>
+<p>笔者整体思路：大致了解go语言的语法，了解某个工具的大致功能、实现方法。然后再辅以AI语法提示（仅仅告诉某个细节，比如如何读取参数等，而不是直接让ai实现功能）。这样便能快速入门一个不算复杂的语言。</p>
+<h2 id="正文">正文
+</h2><h3 id="grep命令简介">grep命令简介
+</h3><blockquote>
+<p><strong>grep</strong>是一个最初用于<a class="link" href="https://zh.wikipedia.org/wiki/Unix"  target="_blank" rel="noopener"
+    >Unix</a>操作系统的<a class="link" href="https://zh.wikipedia.org/wiki/%e5%91%bd%e4%bb%a4%e8%a1%8c"  target="_blank" rel="noopener"
+    >命令行</a>工具。在给出文件列表或<a class="link" href="https://zh.wikipedia.org/wiki/%e6%a0%87%e5%87%86%e8%be%93%e5%85%a5"  target="_blank" rel="noopener"
+    >标准输入</a>后，grep会对匹配一个或多个<a class="link" href="https://zh.wikipedia.org/wiki/%e6%ad%a3%e5%88%99%e8%a1%a8%e8%be%be%e5%bc%8f"  target="_blank" rel="noopener"
+    >正则表达式</a>的文本进行搜索，并只输出匹配（或者不匹配）的行或文本。</p>
+<p>&ndash; wiki百科</p>
+</blockquote>
+<p>grep的一个经典用法是：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">grep /data/test.txt searchContent
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中，/data/test.txt 是要搜索的文件列表， searchContent是我们要搜索的内容。这是一种最基本的功能。</p>
+<h3 id="搭建基本框架">搭建基本框架
+</h3><p>我们的minigrep至少要先能获取到用户的目标 :文件列表及搜索内容 &ndash; 即参数列表。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 读取参数列表
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">args</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 文件路径
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">filepath</span> <span class="o">:=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 搜索内容
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">searchText</span> <span class="o">:=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">content</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;Usage: illegal file name&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 假装已经实现了搜索功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;search %s for file: %s\n&#34;</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;file content: %s\n&#34;</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>现在我们来运行一下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go run .<span class="se">\m</span>ain.go .<span class="se">\d</span>ata<span class="se">\t</span>est1.txt 语言
+</span></span><span class="line"><span class="cl">search 语言 <span class="k">for</span> file: .<span class="se">\d</span>ata<span class="se">\t</span>est1.txt
+</span></span><span class="line"><span class="cl">file content: Go 编程语言是一个开源项目，旨在提高程序员的生产力。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Go 表达力强、简洁、干净且高效。
+</span></span><span class="line"><span class="cl">其并发机制使编写能充分利用多核和联网机器的程序变得容易，而其新颖的类型系统则支持灵活且模块化的程序构建。
+</span></span><span class="line"><span class="cl">Go 可快速编译为机器代码，但具有垃圾回收的便利性和运行时反射的功能。
+</span></span><span class="line"><span class="cl">它是一种快速、静态类型、编译语言，但感觉像是一种动态类型、解释语言。
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>现在会打印search 语言 for file: .\data\test1.txt 以及完整的文件内容了，但是假如用户忘了输入他想要在哪个文件中搜索呢？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS </span><span class="n">D:</span><span class="p">\</span><span class="nb">go-project</span><span class="p">\</span><span class="n">minigrep</span><span class="p">&gt;</span> <span class="n">go</span> <span class="n">run</span> <span class="p">.\</span><span class="n">main</span><span class="p">.</span><span class="py">go</span> <span class="n">语言</span>
+</span></span><span class="line"><span class="cl"><span class="n">panic</span><span class="err">:</span> <span class="n">runtime</span> <span class="n">error</span><span class="err">:</span> <span class="n">index</span> <span class="n">out</span> <span class="n">of</span> <span class="n">range</span> <span class="p">[</span><span class="mf">2</span><span class="p">]</span> <span class="n">with</span> <span class="n">length</span> <span class="mf">2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">goroutine</span> <span class="mf">1</span> <span class="p">[</span><span class="no">running</span><span class="p">]</span><span class="err">:</span>
+</span></span><span class="line"><span class="cl"><span class="n">main</span><span class="p">.</span><span class="py">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">D:</span><span class="p">/</span><span class="nb">go-project</span><span class="p">/</span><span class="n">minigrep</span><span class="p">/</span><span class="n">main</span><span class="p">.</span><span class="n">go</span><span class="err">:</span><span class="mf">15</span> <span class="p">+</span><span class="n">0x185</span>
+</span></span><span class="line"><span class="cl"><span class="n">exit</span> <span class="n">status</span> <span class="mf">2</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>oh no, 这是什么？我们作为开发人员当然能看懂这是什么，但是普通用户呢？因此我们除了需要真正实现搜索功能，还应该对这种异常情况做出更友好的提示。此外，我们所有的逻辑都杂糅在main方法中，这也不符合软件工程的最佳实践。</p>
+<h3 id="初步重构完成功能">初步重构，完成功能
+</h3><p>首先，我们需要将解析参数、读取文件内容、搜索内容这三个功能拆成不同的模块（func），此外，我们还得适当的处理panic。</p>
+<p>在java中，我们习惯用try-catch语法来捕获异常，再给出合理的错误提示。虽然go语言中也有类似的语法（recover），但是go语言更鼓励显式地处理这种预料之内的异常（即用func返回的error来判断）</p>
+<p>根据这些思路，我们写出了下面的代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;strings&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">args</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">filepath</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">content</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nf">searchFile</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">),</span> <span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">args</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">filepath</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">searchText</span> <span class="kt">string</span><span class="p">,</span> <span class="kt">error</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;illegal arguments, should be filepath and searchText&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 文件路径
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">filepath</span> <span class="p">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">searchText</span> <span class="p">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">filepath</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">searchFile</span><span class="p">(</span><span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">searchText</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// go中string类型的空值是&#34;&#34;(空字符串)而不是nil 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">content</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">lines</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">lines</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">filepath</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">string</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 检查文件是否存在
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Stat</span><span class="p">(</span><span class="nx">filepath</span><span class="p">);</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsNotExist</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;file not found&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 检查是否是目录
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">info</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Stat</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">info</span><span class="p">.</span><span class="nf">IsDir</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;is a directory, not a file&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 读取文件内容
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsPermission</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;permission denied&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">),</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="添加单元测试">添加单元测试
+</h3><p>我们可以添加一些单元测试，用以初步验证我们的程序是否有错误。（以下测试代码用AI生成）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">minigrep</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;io&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;strings&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;testing&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// TestParseArgs 测试解析命令行参数的功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">TestParseArgs</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 保存原始的命令行参数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">oldArgs</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span> <span class="p">=</span> <span class="nx">oldArgs</span> <span class="p">}()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 测试正常情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">os</span><span class="p">.</span><span class="nx">Args</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;minigrep&#34;</span><span class="p">,</span> <span class="s">&#34;test.txt&#34;</span><span class="p">,</span> <span class="s">&#34;hello&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">filepath</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected no error, but got %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">filepath</span> <span class="o">!=</span> <span class="s">&#34;test.txt&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected filepath to be &#39;test.txt&#39;, but got %v&#34;</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">searchText</span> <span class="o">!=</span> <span class="s">&#34;hello&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected searchText to be &#39;hello&#39;, but got %v&#34;</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 测试参数数量错误的情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">os</span><span class="p">.</span><span class="nx">Args</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;minigrep&#34;</span><span class="p">,</span> <span class="s">&#34;test.txt&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Expected error for incorrect number of arguments, but got none&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">!</span><span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(),</span> <span class="s">&#34;illegal arguments&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error message containing &#39;illegal arguments&#39;, but got &#39;%v&#39;&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// TestSearchFile 测试在文件内容中搜索文本的功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">TestSearchFile</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 测试包含搜索文本的情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">content</span> <span class="o">:=</span> <span class="s">&#34;hello world\nthis is a test\ngoodbye world&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">searchText</span> <span class="o">:=</span> <span class="s">&#34;hello&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">expected</span> <span class="o">:=</span> <span class="s">&#34;hello world\n&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 重定向标准输出以便捕获
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">r</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Pipe</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">stdout</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">w</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">searchFile</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">stdout</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 读取输出
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">result</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">string</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="o">!=</span> <span class="nx">expected</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected output &#39;%s&#39;, but got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nx">expected</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">result</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 测试不包含搜索文本的情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">content</span> <span class="p">=</span> <span class="s">&#34;hello world\nthis is a test\ngoodbye world&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">searchText</span> <span class="p">=</span> <span class="s">&#34;missing&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">r</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Pipe</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">stdout</span> <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">w</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nf">searchFile</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">stdout</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 读取输出
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">result</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected no output, but got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">result</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// TestReadFile 测试读取文件功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">TestReadFile</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 创建临时测试文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">dir</span> <span class="o">:=</span> <span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">testFile</span> <span class="o">:=</span> <span class="nx">dir</span> <span class="o">+</span> <span class="s">&#34;/test.txt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">data</span> <span class="o">:=</span> <span class="s">&#34;hello world\nthis is a test\ngoodbye world&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">os</span><span class="p">.</span><span class="nf">WriteFile</span><span class="p">(</span><span class="nx">testFile</span><span class="p">,</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">data</span><span class="p">),</span> <span class="mo">0644</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 测试正常读取文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">testFile</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected no error, but got %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">content</span> <span class="o">!=</span> <span class="nx">data</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected content &#39;%s&#39;, but got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">content</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 测试读取不存在的文件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">dir</span> <span class="o">+</span> <span class="s">&#34;/nonexistent.txt&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Expected error for nonexistent file, but got none&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">!</span><span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(),</span> <span class="s">&#34;file not found&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error message containing &#39;file not found&#39;, but got &#39;%v&#39;&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// 测试读取目录
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Expected error for reading directory, but got none&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">!</span><span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(),</span> <span class="s">&#34;is a directory&#34;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error message containing &#39;is a directory&#39;, but got &#39;%v&#39;&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>可以看到：我们的代码通过了测试</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS </span><span class="n">D:</span><span class="p">\</span><span class="nb">go-project</span><span class="p">\</span><span class="n">minigrep</span><span class="p">&gt;</span> <span class="n">go</span> <span class="n">test</span> <span class="n">-v</span>
+</span></span><span class="line"><span class="cl"><span class="p">===</span> <span class="n">RUN</span>   <span class="n">TestParseArgs</span>
+</span></span><span class="line"><span class="cl"><span class="p">---</span> <span class="n">PASS</span><span class="err">:</span> <span class="n">TestParseArgs</span> <span class="p">(</span><span class="mf">0</span><span class="p">.</span><span class="n">00s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">===</span> <span class="n">RUN</span>   <span class="n">TestSearchFile</span>
+</span></span><span class="line"><span class="cl"><span class="p">---</span> <span class="n">PASS</span><span class="err">:</span> <span class="n">TestSearchFile</span> <span class="p">(</span><span class="mf">0</span><span class="p">.</span><span class="n">00s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">===</span> <span class="n">RUN</span>   <span class="n">TestReadFile</span>
+</span></span><span class="line"><span class="cl"><span class="p">---</span> <span class="n">PASS</span><span class="err">:</span> <span class="n">TestReadFile</span> <span class="p">(</span><span class="mf">0</span><span class="p">.</span><span class="n">00s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">PASS</span>
+</span></span><span class="line"><span class="cl"><span class="n">ok</span>      <span class="n">minigrep</span>        <span class="mf">0</span><span class="p">.</span><span class="n">160s</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>现在，我们可以放心将这个程序交给用户去使用啦（尽管功能简陋），但是我们要如何让用户能使用这个程序呢？</p>
+<h3 id="打包为可执行文件">打包为可执行文件
+</h3><p>我们可以用build命令打包为exe，以便用户在一个没有go语言环境的命令行中也能直接执行</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">//</span> <span class="n">打包为exe</span>
+</span></span><span class="line"><span class="cl"><span class="n">go</span> <span class="n">build</span> <span class="n">-o</span> <span class="n">minigrep</span><span class="p">.</span><span class="py">exe</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">//</span> <span class="n">使用用例</span>
+</span></span><span class="line"><span class="cl"><span class="nb">PS </span><span class="n">D:</span><span class="p">\</span><span class="nb">go-project</span><span class="p">\</span><span class="n">minigrep</span><span class="p">&gt;</span> <span class="p">.\</span><span class="n">minigrep</span><span class="p">.</span><span class="py">exe</span> <span class="p">.\</span><span class="n">data</span><span class="p">\</span><span class="n">test1</span><span class="p">.</span><span class="py">txt</span> <span class="n">功能</span>
+</span></span><span class="line"><span class="cl"><span class="n">Go</span> <span class="n">可快速编译为机器代码</span><span class="err">，</span><span class="n">但具有垃圾回收的便利性和运行时反射的功能</span><span class="err">。</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="总结">总结
+</h2><p>通过这个简短的程序，我们初步理解了golang中的func、异常处理、文件系统、赋值、流程控制、字符串处理等基础语法。然而，很多golang的特性、语法我们都没有涉及。此外，这个minigrep甚至不能称之为玩具，功能简陋至极。因此，在下一篇文章中，我们会逐步拓展功能，同时也会涉及更多新语法。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/go/">Go</a>
+        
+            <a href="/tags/%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">项目实战</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script>
+    window.disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (typeof DISQUS == 'object') {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 Example Person
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.0bb588815fd7121916144a8c7f76273bb661ae3c08b72bd2d54d0ecff586d538.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

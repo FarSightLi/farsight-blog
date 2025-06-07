@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>个人笔记 on 骆灵上的个人网站</title>
+        <link>http://localhost:1313/tags/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/</link>
+        <description>Recent content in 个人笔记 on 骆灵上的个人网站</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en</language>
+        <copyright>骆灵上</copyright>
+        <lastBuildDate>Fri, 16 May 2025 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>操作系统（南京大学蒋炎炎）--个人学习笔记</title>
+        <link>http://localhost:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <pubDate>Fri, 16 May 2025 00:00:00 +0000</pubDate>
+        
+        <guid>http://localhost:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <description>&lt;h2 id=&#34;8-终端和进程组unix-shell&#34;&gt;8 终端和进程组、unix shell
+&lt;/h2&gt;&lt;h2 id=&#34;13-多线程编程入门&#34;&gt;13 多线程编程入门
+&lt;/h2&gt;&lt;p&gt;&amp;hellip;spawn后，共享内存不变，新增新的栈帧&lt;/p&gt;
+&lt;p&gt;并发vs并行&lt;/p&gt;
+&lt;p&gt;证明了全局变量是共享的、证明栈的大小（不断递归使用栈空间）&lt;/p&gt;
+&lt;p&gt;多线程打破了确定性 -&amp;gt; 经典的并发支付、并发sum++&lt;/p&gt;
+&lt;p&gt;一个小题目：并发执行三个sum. ,sum的最小值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F_md_files/f600f690-3c94-11f0-b8e7-657dd91a99a2_20250529215814.jpeg?v=1&amp;amp;type=image&amp;amp;token=V1%253APlTHswpyJ4TAwJO0BUEAJKomA_NiMN0hAjYUbPCPffU&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;t1&lt;/th&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;t2&lt;/th&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;t3&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;t = 0，正常执行++和store，则sum=2&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;t=0, t+=1,t=1&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;t=0, t+=1,t=1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;再加一次并store，则sum=2&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;store， sum = 1&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;store, sum =1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;此时load出sum =1（被另外两个线程覆盖了）&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;load后，t=1，再++&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;load后，t=1，再++&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;正常store，再load，再+1，再正常store后，sum=3&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;正常store，再load，再+1，再正常store后，sum=3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;再进行++，t=2，再load，于是sum最终为2&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;编译器会优化程序 编译器假设，没有什么会随意更改程序状态，那么只要优化前后的程序，在程序调用层面上等价，那么语句其实是可以随意调换删除的&lt;/p&gt;
+&lt;p&gt;那么编写程序时，大部分时候希望编译器优化的，毕竟需要性能，那么有两个不推荐的路子：1.插入不可优化的代码块。2.使用volatile关键字&lt;/p&gt;
+&lt;p&gt;况且内存也不是真的sharded的，由于物理上的距离、读写的速度，A线程上的内存和B线程上的内存是很有可能不一致的（因为为了保证快，操作系统读取时，是立马返回的，而不是像其他内存块确认是否有修改）&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>计算机网络(中科大郑烇)--个人学习笔记</title>
+        <link>http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <pubDate>Thu, 01 May 2025 00:00:00 +0000</pubDate>
+        
+        <guid>http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <description>&lt;h1 id=&#34;2-应用层&#34;&gt;2 应用层
+&lt;/h1&gt;&lt;h2 id=&#34;21-web和http&#34;&gt;2.1 Web和Http
+&lt;/h2&gt;&lt;p&gt;对http这一套还是非常了解的了。
+这节课大致说了请求头、建立连接过程、Cookie等
+这是一些之前没注意的细节：
+http1.0只有POST和GET，Http1.1有PUT、DELETE
+后面还讲了一些服务器缓存，涉及到了一个场景的性能提升计算，过于细节没有特别关注。
+介绍了缓存的机制（根据时间来判断是否拉新的，状态码304、200）&lt;/p&gt;
+&lt;h2 id=&#34;22-ftp&#34;&gt;2.2 FTP
+&lt;/h2&gt;&lt;p&gt;大概介绍了一下，客户端先和服务断建立控制连接，用于账号密码校验、控制切换目录等，之后再建立数据连接，用于文件传输&lt;/p&gt;
+&lt;h1 id=&#34;23&#34;&gt;2.3
+&lt;/h1&gt;&lt;h2 id=&#34;27-tcp套接字编程&#34;&gt;2.7 TCP套接字编程
+&lt;/h2&gt;&lt;p&gt;主要说了api实现&lt;/p&gt;
+&lt;p&gt;服务端：1.创建welcome socket，2绑定了本地端口、ip；3.accept等待客户端连接&lt;/p&gt;
+&lt;p&gt;客户端：1.创建socket（操作系统默认隐式绑定本地ip端口）2.connect连接服务端，绑定服务端ip端口&lt;/p&gt;
+&lt;p&gt;服务端：收到建立请求后，就会再建一个新的socket来绑定本地、对方ip端口&lt;/p&gt;
+&lt;p&gt;之后就是客户端wirte、服务端read，服务端write，客户端read&lt;/p&gt;
+&lt;p&gt;之后就是close&lt;/p&gt;
+&lt;h2 id=&#34;31&#34;&gt;3.1
+&lt;/h2&gt;&lt;p&gt;Ip协议是主机和主机之间的通信&lt;/p&gt;
+&lt;p&gt;TCP、UDP是进程和进程之间的通信&lt;/p&gt;
+&lt;p&gt;TCP传输的是数据流，没有数据边界；UDP传输的是数据报datagram，每个消息都是独立完整的数据报&lt;/p&gt;
+&lt;p&gt;TCP在ip基础上增强了以下能力：更可靠、拥塞流量控制、而UDP则没有在ip基础上提升能力（TCP、UDP都做了多路复用解复用） 但是他们都不能提升带宽、降低延迟&lt;/p&gt;
+&lt;h2 id=&#34;32多路复用解复用&#34;&gt;3.2多路复用、解复用
+&lt;/h2&gt;&lt;p&gt;他们如何在进程中通信？TCP（携带的socket包含了原ip目标ip，原port、目标port）会携带原port、目标port；ip会携带原ip、目标ip，因此当对方收到tcp segment后，自然能通过这四个信息去查到对应的socket和pid；而UDP只携带了socket（原ip、原port）和cad（对方ip、对方prot）；除此之外，当然他们都携带了数据msg&lt;/p&gt;
+&lt;h2 id=&#34;33-无连接udp&#34;&gt;3.3 无连接UDP
+&lt;/h2&gt;&lt;p&gt;UDP （user datagram protocol）因为只在发送、接受时进行了简单的校验运算，所以传输速度很快，没有提供其他高级特性&lt;/p&gt;
+&lt;p&gt;为什么UDP 的差错校验机制使用了这样一个复杂的机制？&lt;/p&gt;
+&lt;p&gt;假设采用一种更简单的方式：发送端将所有数据每16位进行补和运算，将结果放在一个新的数据段中（假设叫校验码），然后接收端再同样将所有数据每16位进行补和运算，如果结果等于校验，则表明没有出错。这样的方案明显是不充足的，容易引起误判
+为什么将数据部分每16位进行补和运算（采用进位回滚的相加并取反），然后与校验码进行相加，一定会等于FFFF？&lt;/p&gt;
+&lt;p&gt;将数据部分每16位进行补和运算（采用进位回滚的相加并取反），然后与校验码进行相加，如果等于FFFF就没有出错？&lt;/p&gt;
+&lt;p&gt;因为校验码是&lt;/p&gt;
+&lt;p&gt;因为这样可以最大化保证校验是有效且快速的？&lt;/p&gt;
+&lt;h2 id=&#34;34可靠数据传输rdp&#34;&gt;3.4可靠数据传输RDP
+&lt;/h2&gt;&lt;p&gt;RDP ：reliable datagram protocol&lt;/p&gt;
+&lt;h3 id=&#34;rdp10&#34;&gt;RDP1.0：
+&lt;/h3&gt;&lt;p&gt;这是一种协议假设，假设消息既不丢失也不出错，这样只需要发送方不停发送消息，接收方不停接受消息即可&lt;/p&gt;
+&lt;h3 id=&#34;rdp20&#34;&gt;RDP2.0
+&lt;/h3&gt;&lt;p&gt;假设此协议下，消息会发生错误，因此需要协议解决错误&lt;/p&gt;
+&lt;p&gt;不出错情况下：消息发送方发送消息，接收方收到消息后，通过校验，发现消息未出错，则返回ack&lt;/p&gt;
+&lt;p&gt;出错了：接收方返回nack，则发送方再次发送消息1&lt;/p&gt;
+&lt;h3 id=&#34;rdp21&#34;&gt;RDP2.1
+&lt;/h3&gt;&lt;p&gt;发送的消息会出错，返回的消息也同样会出错&lt;/p&gt;
+&lt;p&gt;假如发送方收到了接收方返回的出错的消息（即无法识别的消息），则默认是nack，即默认发送出错，再次发送0号消息，接受方接受以后，返回ack0，发送方就继续发送msg1。如果实际上没有出错，则接收方丢弃此次消息即可&lt;/p&gt;
+&lt;h3 id=&#34;rdp22&#34;&gt;RDP2.2
+&lt;/h3&gt;&lt;p&gt;对2.1进行小优化，不发送NACK了，如果出错，返回上一条消息的ACK，比如1号消息出错，返回ACK0&lt;/p&gt;
+&lt;h3 id=&#34;rdp30&#34;&gt;RDP3.0
+&lt;/h3&gt;&lt;p&gt;此协议下，消息会丢失&lt;/p&gt;
+&lt;p&gt;因此引入超时重发机制，假如发送消息后一段时间后，没有返回ack，则说明消息丢失，再次发送即可，假如实际没丢失，只是高延迟，则接收方收到消息丢弃即可&lt;/p&gt;
+&lt;h2 id=&#34;35tcp&#34;&gt;3.5TCP
+&lt;/h2&gt;&lt;h3 id=&#34;报文结构&#34;&gt;报文结构
+&lt;/h3&gt;&lt;p&gt;ip、端口、序号、确认号（序号和确认号都值得是上层下来的数据的数据偏移量）、一些不常用的标志位、以及body&lt;/p&gt;
+&lt;p&gt;由于是全双工，所以返回ack的时候用到了确认号，空余量（用于流量控制），同时也有需要返回的真正的数据&lt;/p&gt;
+&lt;p&gt;如何控制超时重传？&lt;/p&gt;
+&lt;p&gt;发送第一段数据后启动timer，记录返回时间。通过计算类似于平均值与四倍方差的时间来动态计算超时时间。&lt;/p&gt;
+&lt;p&gt;TCP是累计确认的。&lt;/p&gt;
+&lt;p&gt;tcp提高性能的方法&lt;/p&gt;
+&lt;p&gt;1.延迟确认（在某个timer内，等待下一个段数据到来，合并确认，可以减少传输及干扰  或者在timer内都没收到消息，则返回已经到的ack）&lt;/p&gt;
+&lt;p&gt;2.乱序确认则立即返回ack上一段&lt;/p&gt;
+&lt;p&gt;3.（快速重传）如果超时或收到三个冗余确认，则重发（说明后三段都已经到了，但是所期待的段未ack，则快速重传）&lt;/p&gt;
+&lt;p&gt;流量控制：&lt;/p&gt;
+&lt;p&gt;返回ACK时顺便带上缓冲区大小&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

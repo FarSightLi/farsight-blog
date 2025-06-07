@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="计网的个人笔记">
+<title>计算机网络(中科大郑烇)--个人学习笔记</title>
+
+<link rel='canonical' href='http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="计算机网络(中科大郑烇)--个人学习笔记">
+<meta property='og:description' content="计网的个人笔记">
+<meta property='og:url' content='http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/'>
+<meta property='og:site_name' content='骆灵上的个人网站'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='计网' /><meta property='article:tag' content='个人笔记' /><meta property='article:published_time' content='2025-05-01T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-05-01T00:00:00&#43;00:00'/>
+<meta name="twitter:title" content="计算机网络(中科大郑烇)--个人学习笔记">
+<meta name="twitter:description" content="计网的个人笔记">
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_huda2458f72ce188392d75c5d51cd8e24e_373_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">骆灵上的个人网站</a></h1>
+            <h2 class="site-description">知是行之始，行是知之成</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://github.com/CaiJimmy/hugo-theme-stack'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="http://localhost:1313/" selected>English</option>
+                                
+                                    <option value="http://localhost:1313/zh-cn/" >中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#21-web和http">2.1 Web和Http</a></li>
+    <li><a href="#22-ftp">2.2 FTP</a></li>
+  </ol>
+
+  <ol>
+    <li><a href="#27-tcp套接字编程">2.7 TCP套接字编程</a></li>
+    <li><a href="#31">3.1</a></li>
+    <li><a href="#32多路复用解复用">3.2多路复用、解复用</a></li>
+    <li><a href="#33-无连接udp">3.3 无连接UDP</a></li>
+    <li><a href="#34可靠数据传输rdp">3.4可靠数据传输RDP</a>
+      <ol>
+        <li><a href="#rdp10">RDP1.0：</a></li>
+        <li><a href="#rdp20">RDP2.0</a></li>
+        <li><a href="#rdp21">RDP2.1</a></li>
+        <li><a href="#rdp22">RDP2.2</a></li>
+        <li><a href="#rdp30">RDP3.0</a></li>
+      </ol>
+    </li>
+    <li><a href="#35tcp">3.5TCP</a>
+      <ol>
+        <li><a href="#报文结构">报文结构</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E8%AE%A1%E7%BD%91/" >
+                计网
+            </a>
+        
+            <a href="/categories/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/" >
+                个人笔记
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">计算机网络(中科大郑烇)--个人学习笔记</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            计网的个人笔记
+        </h3>
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">May 01, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    1 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="2-应用层">2 应用层
+</h1><h2 id="21-web和http">2.1 Web和Http
+</h2><p>对http这一套还是非常了解的了。
+这节课大致说了请求头、建立连接过程、Cookie等
+这是一些之前没注意的细节：
+http1.0只有POST和GET，Http1.1有PUT、DELETE
+后面还讲了一些服务器缓存，涉及到了一个场景的性能提升计算，过于细节没有特别关注。
+介绍了缓存的机制（根据时间来判断是否拉新的，状态码304、200）</p>
+<h2 id="22-ftp">2.2 FTP
+</h2><p>大概介绍了一下，客户端先和服务断建立控制连接，用于账号密码校验、控制切换目录等，之后再建立数据连接，用于文件传输</p>
+<h1 id="23">2.3
+</h1><h2 id="27-tcp套接字编程">2.7 TCP套接字编程
+</h2><p>主要说了api实现</p>
+<p>服务端：1.创建welcome socket，2绑定了本地端口、ip；3.accept等待客户端连接</p>
+<p>客户端：1.创建socket（操作系统默认隐式绑定本地ip端口）2.connect连接服务端，绑定服务端ip端口</p>
+<p>服务端：收到建立请求后，就会再建一个新的socket来绑定本地、对方ip端口</p>
+<p>之后就是客户端wirte、服务端read，服务端write，客户端read</p>
+<p>之后就是close</p>
+<h2 id="31">3.1
+</h2><p>Ip协议是主机和主机之间的通信</p>
+<p>TCP、UDP是进程和进程之间的通信</p>
+<p>TCP传输的是数据流，没有数据边界；UDP传输的是数据报datagram，每个消息都是独立完整的数据报</p>
+<p>TCP在ip基础上增强了以下能力：更可靠、拥塞流量控制、而UDP则没有在ip基础上提升能力（TCP、UDP都做了多路复用解复用） 但是他们都不能提升带宽、降低延迟</p>
+<h2 id="32多路复用解复用">3.2多路复用、解复用
+</h2><p>他们如何在进程中通信？TCP（携带的socket包含了原ip目标ip，原port、目标port）会携带原port、目标port；ip会携带原ip、目标ip，因此当对方收到tcp segment后，自然能通过这四个信息去查到对应的socket和pid；而UDP只携带了socket（原ip、原port）和cad（对方ip、对方prot）；除此之外，当然他们都携带了数据msg</p>
+<h2 id="33-无连接udp">3.3 无连接UDP
+</h2><p>UDP （user datagram protocol）因为只在发送、接受时进行了简单的校验运算，所以传输速度很快，没有提供其他高级特性</p>
+<p>为什么UDP 的差错校验机制使用了这样一个复杂的机制？</p>
+<p>假设采用一种更简单的方式：发送端将所有数据每16位进行补和运算，将结果放在一个新的数据段中（假设叫校验码），然后接收端再同样将所有数据每16位进行补和运算，如果结果等于校验，则表明没有出错。这样的方案明显是不充足的，容易引起误判
+为什么将数据部分每16位进行补和运算（采用进位回滚的相加并取反），然后与校验码进行相加，一定会等于FFFF？</p>
+<p>将数据部分每16位进行补和运算（采用进位回滚的相加并取反），然后与校验码进行相加，如果等于FFFF就没有出错？</p>
+<p>因为校验码是</p>
+<p>因为这样可以最大化保证校验是有效且快速的？</p>
+<h2 id="34可靠数据传输rdp">3.4可靠数据传输RDP
+</h2><p>RDP ：reliable datagram protocol</p>
+<h3 id="rdp10">RDP1.0：
+</h3><p>这是一种协议假设，假设消息既不丢失也不出错，这样只需要发送方不停发送消息，接收方不停接受消息即可</p>
+<h3 id="rdp20">RDP2.0
+</h3><p>假设此协议下，消息会发生错误，因此需要协议解决错误</p>
+<p>不出错情况下：消息发送方发送消息，接收方收到消息后，通过校验，发现消息未出错，则返回ack</p>
+<p>出错了：接收方返回nack，则发送方再次发送消息1</p>
+<h3 id="rdp21">RDP2.1
+</h3><p>发送的消息会出错，返回的消息也同样会出错</p>
+<p>假如发送方收到了接收方返回的出错的消息（即无法识别的消息），则默认是nack，即默认发送出错，再次发送0号消息，接受方接受以后，返回ack0，发送方就继续发送msg1。如果实际上没有出错，则接收方丢弃此次消息即可</p>
+<h3 id="rdp22">RDP2.2
+</h3><p>对2.1进行小优化，不发送NACK了，如果出错，返回上一条消息的ACK，比如1号消息出错，返回ACK0</p>
+<h3 id="rdp30">RDP3.0
+</h3><p>此协议下，消息会丢失</p>
+<p>因此引入超时重发机制，假如发送消息后一段时间后，没有返回ack，则说明消息丢失，再次发送即可，假如实际没丢失，只是高延迟，则接收方收到消息丢弃即可</p>
+<h2 id="35tcp">3.5TCP
+</h2><h3 id="报文结构">报文结构
+</h3><p>ip、端口、序号、确认号（序号和确认号都值得是上层下来的数据的数据偏移量）、一些不常用的标志位、以及body</p>
+<p>由于是全双工，所以返回ack的时候用到了确认号，空余量（用于流量控制），同时也有需要返回的真正的数据</p>
+<p>如何控制超时重传？</p>
+<p>发送第一段数据后启动timer，记录返回时间。通过计算类似于平均值与四倍方差的时间来动态计算超时时间。</p>
+<p>TCP是累计确认的。</p>
+<p>tcp提高性能的方法</p>
+<p>1.延迟确认（在某个timer内，等待下一个段数据到来，合并确认，可以减少传输及干扰  或者在timer内都没收到消息，则返回已经到的ack）</p>
+<p>2.乱序确认则立即返回ack上一段</p>
+<p>3.（快速重传）如果超时或收到三个冗余确认，则重发（说明后三段都已经到了，但是所期待的段未ack，则快速重传）</p>
+<p>流量控制：</p>
+<p>返回ACK时顺便带上缓冲区大小</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AE%A1%E7%BD%91/">计网</a>
+        
+            <a href="/tags/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/">个人笔记</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">Related content</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">操作系统（南京大学蒋炎炎）--个人学习笔记</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script>
+    window.disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (typeof DISQUS == 'object') {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 骆灵上
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.0bb588815fd7121916144a8c7f76273bb661ae3c08b72bd2d54d0ecff586d538.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

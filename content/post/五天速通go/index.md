@@ -1,0 +1,336 @@
++++
+
+author = "FarSightLi"
+title = "五天速通go(一)--搭建mini-grep"
+date = "2025-05-01"
+description = "通过模仿grep工具来快速入门go语言"
+categories = [
+    "Go","项目实战"
+]
+tags = [
+   "Go","项目实战"
+]
+
++++
+
+## 前言
+
+笔者有两年Java开发经验，目前需要临时用go语言开发一些功能，为了快速入手Go语言，在简单了解基础语法后，决定以实战来巩固知识。
+
+参考了《Rust圣经》的思路，决定先开发一个模仿grep的工具，来快速巩固基础语法、Go项目管理。
+
+为精简内容，本系列不包含环境搭建等基础部分（网上教程写的更清楚详细），直接讲解开发思路。希望能对后来者提供一些入门思路。
+
+笔者整体思路：大致了解go语言的语法，了解某个工具的大致功能、实现方法。然后再辅以AI语法提示（仅仅告诉某个细节，比如如何读取参数等，而不是直接让ai实现功能）。这样便能快速入门一个不算复杂的语言。
+
+## 正文
+
+### grep命令简介
+
+> **grep**是一个最初用于[Unix](https://zh.wikipedia.org/wiki/Unix)操作系统的[命令行](https://zh.wikipedia.org/wiki/命令行)工具。在给出文件列表或[标准输入](https://zh.wikipedia.org/wiki/标准输入)后，grep会对匹配一个或多个[正则表达式](https://zh.wikipedia.org/wiki/正则表达式)的文本进行搜索，并只输出匹配（或者不匹配）的行或文本。
+>
+> -- wiki百科
+
+grep的一个经典用法是：
+
+```bash
+grep /data/test.txt searchContent
+```
+
+其中，/data/test.txt 是要搜索的文件列表， searchContent是我们要搜索的内容。这是一种最基本的功能。
+
+### 搭建基本框架
+
+我们的minigrep至少要先能获取到用户的目标 :文件列表及搜索内容 -- 即参数列表。
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	// 读取参数列表
+	args := os.Args
+
+	// 文件路径
+	filepath := args[1]
+	// 搜索内容
+	searchText := args[2]
+	content, e := os.ReadFile(filepath)
+	if e != nil {
+		panic("Usage: illegal file name")
+	}
+	// 假装已经实现了搜索功能
+	fmt.Printf("search %s for file: %s\n", searchText, filepath)
+	fmt.Printf("file content: %s\n", string(content))
+}
+
+
+```
+
+现在我们来运行一下：
+
+```bash
+go run .\main.go .\data\test1.txt 语言
+search 语言 for file: .\data\test1.txt
+file content: Go 编程语言是一个开源项目，旨在提高程序员的生产力。
+
+Go 表达力强、简洁、干净且高效。
+其并发机制使编写能充分利用多核和联网机器的程序变得容易，而其新颖的类型系统则支持灵活且模块化的程序构建。
+Go 可快速编译为机器代码，但具有垃圾回收的便利性和运行时反射的功能。
+它是一种快速、静态类型、编译语言，但感觉像是一种动态类型、解释语言。
+```
+
+
+
+现在会打印search 语言 for file: .\data\test1.txt 以及完整的文件内容了，但是假如用户忘了输入他想要在哪个文件中搜索呢？
+
+```powershell
+PS D:\go-project\minigrep> go run .\main.go 语言
+panic: runtime error: index out of range [2] with length 2
+
+goroutine 1 [running]:
+main.main()
+        D:/go-project/minigrep/main.go:15 +0x185
+exit status 2
+```
+
+oh no, 这是什么？我们作为开发人员当然能看懂这是什么，但是普通用户呢？因此我们除了需要真正实现搜索功能，还应该对这种异常情况做出更友好的提示。此外，我们所有的逻辑都杂糅在main方法中，这也不符合软件工程的最佳实践。
+
+### 初步重构，完成功能
+
+首先，我们需要将解析参数、读取文件内容、搜索内容这三个功能拆成不同的模块（func），此外，我们还得适当的处理panic。
+
+在java中，我们习惯用try-catch语法来捕获异常，再给出合理的错误提示。虽然go语言中也有类似的语法（recover），但是go语言更鼓励显式地处理这种预料之内的异常（即用func返回的error来判断）
+
+根据这些思路，我们写出了下面的代码：
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"strings"
+)
+
+func main() {
+	args := os.Args
+	filepath, searchText, err := parseArgs(args)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	content, e := readFile(filepath)
+	if e != nil {
+		fmt.Println(e)
+		return
+	}
+	searchFile(string(content), searchText)
+}
+
+func parseArgs(args []string) (filepath string, searchText string, error error) {
+	if len(args) != 3 {
+		return "", "", fmt.Errorf("illegal arguments, should be filepath and searchText")
+	}
+
+	// 文件路径
+	filepath = args[1]
+	searchText = args[2]
+	return filepath, searchText, nil
+}
+func searchFile(content string, searchText string) {
+    // go中string类型的空值是""(空字符串)而不是nil 
+	if content == "" {
+		return
+	}
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, searchText) {
+			fmt.Println(line)
+		}
+	}
+}
+
+func readFile(filepath string) (string, error) {
+	// 检查文件是否存在
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return "", fmt.Errorf("file not found")
+	}
+
+	// 检查是否是目录
+	info, err := os.Stat(filepath)
+	if err == nil && info.IsDir() {
+		return "", fmt.Errorf("is a directory, not a file")
+	}
+
+	// 读取文件内容
+	content, err := os.ReadFile(filepath)
+	if err != nil {
+		if os.IsPermission(err) {
+			return "", fmt.Errorf("permission denied")
+		}
+		return "", err
+	}
+
+	return string(content), nil
+}
+
+```
+
+### 添加单元测试
+
+我们可以添加一些单元测试，用以初步验证我们的程序是否有错误。（以下测试代码用AI生成）
+
+```go
+package minigrep
+
+import (
+	"io"
+	"os"
+	"strings"
+	"testing"
+)
+
+// TestParseArgs 测试解析命令行参数的功能
+func TestParseArgs(t *testing.T) {
+	// 保存原始的命令行参数
+	oldArgs := os.Args
+	defer func() { os.Args = oldArgs }()
+
+	// 测试正常情况
+	os.Args = []string{"minigrep", "test.txt", "hello"}
+	filepath, searchText, err := parseArgs(os.Args)
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+	}
+	if filepath != "test.txt" {
+		t.Errorf("Expected filepath to be 'test.txt', but got %v", filepath)
+	}
+	if searchText != "hello" {
+		t.Errorf("Expected searchText to be 'hello', but got %v", searchText)
+	}
+
+	// 测试参数数量错误的情况
+	os.Args = []string{"minigrep", "test.txt"}
+	_, _, err = parseArgs(os.Args)
+	if err == nil {
+		t.Error("Expected error for incorrect number of arguments, but got none")
+	} else if !strings.Contains(err.Error(), "illegal arguments") {
+		t.Errorf("Expected error message containing 'illegal arguments', but got '%v'", err)
+	}
+}
+
+// TestSearchFile 测试在文件内容中搜索文本的功能
+func TestSearchFile(t *testing.T) {
+	// 测试包含搜索文本的情况
+	content := "hello world\nthis is a test\ngoodbye world"
+	searchText := "hello"
+	expected := "hello world\n"
+
+	// 重定向标准输出以便捕获
+	r, w, _ := os.Pipe()
+	stdout := os.Stdout
+	os.Stdout = w
+
+	searchFile(content, searchText)
+	w.Close()
+	os.Stdout = stdout
+
+	// 读取输出
+	result, _ := io.ReadAll(r)
+	if string(result) != expected {
+		t.Errorf("Expected output '%s', but got '%s'", expected, string(result))
+	}
+
+	// 测试不包含搜索文本的情况
+	content = "hello world\nthis is a test\ngoodbye world"
+	searchText = "missing"
+	r, w, _ = os.Pipe()
+	stdout = os.Stdout
+	os.Stdout = w
+
+	searchFile(content, searchText)
+	w.Close()
+	os.Stdout = stdout
+
+	// 读取输出
+	result, _ = io.ReadAll(r)
+	if len(result) > 0 {
+		t.Errorf("Expected no output, but got '%s'", string(result))
+	}
+}
+
+// TestReadFile 测试读取文件功能
+func TestReadFile(t *testing.T) {
+	// 创建临时测试文件
+	dir := t.TempDir()
+	testFile := dir + "/test.txt"
+	data := "hello world\nthis is a test\ngoodbye world"
+	os.WriteFile(testFile, []byte(data), 0644)
+
+	// 测试正常读取文件
+	content, err := readFile(testFile)
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+	}
+	if content != data {
+		t.Errorf("Expected content '%s', but got '%s'", data, content)
+	}
+
+	// 测试读取不存在的文件
+	_, err = readFile(dir + "/nonexistent.txt")
+	if err == nil {
+		t.Error("Expected error for nonexistent file, but got none")
+	} else if !strings.Contains(err.Error(), "file not found") {
+		t.Errorf("Expected error message containing 'file not found', but got '%v'", err)
+	}
+
+	// 测试读取目录
+	_, err = readFile(dir)
+	if err == nil {
+		t.Error("Expected error for reading directory, but got none")
+	} else if !strings.Contains(err.Error(), "is a directory") {
+		t.Errorf("Expected error message containing 'is a directory', but got '%v'", err)
+	}
+}
+
+```
+
+可以看到：我们的代码通过了测试
+
+```powershell
+PS D:\go-project\minigrep> go test -v
+=== RUN   TestParseArgs
+--- PASS: TestParseArgs (0.00s)
+=== RUN   TestSearchFile
+--- PASS: TestSearchFile (0.00s)
+=== RUN   TestReadFile
+--- PASS: TestReadFile (0.00s)
+PASS
+ok      minigrep        0.160s
+```
+
+现在，我们可以放心将这个程序交给用户去使用啦（尽管功能简陋），但是我们要如何让用户能使用这个程序呢？
+
+### 打包为可执行文件
+
+我们可以用build命令打包为exe，以便用户在一个没有go语言环境的命令行中也能直接执行
+
+```powershell
+// 打包为exe
+go build -o minigrep.exe
+
+// 使用用例
+PS D:\go-project\minigrep> .\minigrep.exe .\data\test1.txt 功能
+Go 可快速编译为机器代码，但具有垃圾回收的便利性和运行时反射的功能。
+
+
+```
+
+## 总结
+
+通过这个简短的程序，我们初步理解了golang中的func、异常处理、文件系统、赋值、流程控制、字符串处理等基础语法。然而，很多golang的特性、语法我们都没有涉及。此外，这个minigrep甚至不能称之为玩具，功能简陋至极。因此，在下一篇文章中，我们会逐步拓展功能，同时也会涉及更多新语法。

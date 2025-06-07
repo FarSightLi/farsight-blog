@@ -1,0 +1,51 @@
+name: Deploy Hugo Site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # 触发分支
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出源码
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive  # 包含主题子模块
+
+      # 2. 安装 Hugo 扩展版
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.123.7'  # 使用你的 Hugo 版本
+          extended: true
+
+      # 3. 构建网站
+      - name: Build
+        run: hugo --minify
+
+      # 4. 配置 SSH 密钥
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_TOKEN }
+
+      # 5. 配置 Git
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@users.noreply.github.com"
+          git config --global core.sshCommand "ssh -i ~/.ssh/github-actions"
+
+      # 6. 部署到 GitHub Pages
+      - name: Deploy
+        run: |
+          cd public
+          git init
+          git remote add origin git@github.com:FarsightLi/FarsightLi.github.io.git
+          git add .
+          git commit -m "Deploy from GitHub Actions"
+          git push -f origin main

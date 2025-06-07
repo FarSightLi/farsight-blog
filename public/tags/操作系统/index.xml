@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>操作系统 on 骆灵上的个人网站</title>
+        <link>http://localhost:1313/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</link>
+        <description>Recent content in 操作系统 on 骆灵上的个人网站</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en</language>
+        <copyright>骆灵上</copyright>
+        <lastBuildDate>Fri, 16 May 2025 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>操作系统（南京大学蒋炎炎）--个人学习笔记</title>
+        <link>http://localhost:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <pubDate>Fri, 16 May 2025 00:00:00 +0000</pubDate>
+        
+        <guid>http://localhost:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <description>&lt;h2 id=&#34;8-终端和进程组unix-shell&#34;&gt;8 终端和进程组、unix shell
+&lt;/h2&gt;&lt;h2 id=&#34;13-多线程编程入门&#34;&gt;13 多线程编程入门
+&lt;/h2&gt;&lt;p&gt;&amp;hellip;spawn后，共享内存不变，新增新的栈帧&lt;/p&gt;
+&lt;p&gt;并发vs并行&lt;/p&gt;
+&lt;p&gt;证明了全局变量是共享的、证明栈的大小（不断递归使用栈空间）&lt;/p&gt;
+&lt;p&gt;多线程打破了确定性 -&amp;gt; 经典的并发支付、并发sum++&lt;/p&gt;
+&lt;p&gt;一个小题目：并发执行三个sum. ,sum的最小值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;http://localhost:1313/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F_md_files/f600f690-3c94-11f0-b8e7-657dd91a99a2_20250529215814.jpeg?v=1&amp;amp;type=image&amp;amp;token=V1%253APlTHswpyJ4TAwJO0BUEAJKomA_NiMN0hAjYUbPCPffU&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt; &lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;t1&lt;/th&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;t2&lt;/th&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;t3&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;t = 0，正常执行++和store，则sum=2&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;t=0, t+=1,t=1&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;t=0, t+=1,t=1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;再加一次并store，则sum=2&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;store， sum = 1&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;store, sum =1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;此时load出sum =1（被另外两个线程覆盖了）&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;load后，t=1，再++&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;load后，t=1，再++&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;正常store，再load，再+1，再正常store后，sum=3&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;正常store，再load，再+1，再正常store后，sum=3&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;再进行++，t=2，再load，于是sum最终为2&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;编译器会优化程序 编译器假设，没有什么会随意更改程序状态，那么只要优化前后的程序，在程序调用层面上等价，那么语句其实是可以随意调换删除的&lt;/p&gt;
+&lt;p&gt;那么编写程序时，大部分时候希望编译器优化的，毕竟需要性能，那么有两个不推荐的路子：1.插入不可优化的代码块。2.使用volatile关键字&lt;/p&gt;
+&lt;p&gt;况且内存也不是真的sharded的，由于物理上的距离、读写的速度，A线程上的内存和B线程上的内存是很有可能不一致的（因为为了保证快，操作系统读取时，是立马返回的，而不是像其他内存块确认是否有修改）&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>
