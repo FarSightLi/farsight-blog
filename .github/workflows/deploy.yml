@@ -31,6 +31,7 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
+          external_repository: FarsightLi/FarsightLi.github.io
           deploy_key: ${{ secrets.DEPLOY_TOKEN }}  # 你的私钥
           publish_dir: ./public                    # Hugo 的输出目录
           full_commit_message: Deploy from GitHub Actions (commit ${{ github.sha }})
