@@ -10,7 +10,7 @@
 <meta property='og:description' content="通过模仿grep工具来快速入门go语言">
 <meta property='og:url' content='http://localhost:1313/p/%E4%BA%94%E5%A4%A9%E9%80%9F%E9%80%9Ago--%E6%90%AD%E5%BB%BAmini-grep%E4%BA%8C/'>
 <meta property='og:site_name' content='骆灵上的个人网站'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Go' /><meta property='article:tag' content='项目实战' /><meta property='article:published_time' content='2025-05-01T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-05-01T00:00:00&#43;00:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Go' /><meta property='article:tag' content='项目实战' /><meta property='article:published_time' content='2025-06-07T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2025-06-07T00:00:00&#43;00:00'/>
 <meta name="twitter:title" content="五天速通go--搭建mini-grep(二)">
 <meta name="twitter:description" content="通过模仿grep工具来快速入门go语言">
     </head>
@@ -291,13 +291,17 @@
     <li><a href="#前言">前言</a></li>
     <li><a href="#正文">正文</a>
       <ol>
-        <li><a href="#grep命令简介">grep命令简介</a></li>
-        <li><a href="#搭建基本框架">搭建基本框架</a></li>
-        <li><a href="#初步重构完成功能">初步重构，完成功能</a></li>
-        <li><a href="#添加单元测试">添加单元测试</a></li>
-        <li><a href="#打包为可执行文件">打包为可执行文件</a></li>
+        <li><a href="#功能拓展">功能拓展</a></li>
+        <li><a href="#优化参数获取">优化参数获取</a>
+          <ol>
+            <li><a href="#结构体">结构体</a></li>
+          </ol>
+        </li>
+        <li><a href="#实现思路">实现思路</a></li>
+        <li><a href="#单元测试">单元测试</a></li>
       </ol>
     </li>
+    <li><a href="#代码全文">代码全文</a></li>
     <li><a href="#总结">总结</a></li>
   </ol>
 </nav>
@@ -356,7 +360,7 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                <time class="article-time--published">May 01, 2025</time>
+                <time class="article-time--published">Jun 07, 2025</time>
             </div>
         
 
@@ -371,7 +375,7 @@
 
 
                 <time class="article-time--reading">
-                    5 minute read
+                    7 minute read
                 </time>
             </div>
         
@@ -391,28 +395,83 @@
 <p>参考了《Rust圣经》的思路，决定先开发一个模仿grep的工具，来快速巩固基础语法、Go项目管理。</p>
 <p>为精简内容，本系列不包含环境搭建等基础部分（网上教程写的更清楚详细），直接讲解开发思路。希望能对后来者提供一些入门思路。</p>
 <p>笔者整体思路：大致了解go语言的语法，了解某个工具的大致功能、实现方法。然后再辅以AI语法提示（仅仅告诉某个细节，比如如何读取参数等，而不是直接让ai实现功能）。这样便能快速入门一个不算复杂的语言。</p>
+<p>PS：代码仓库: <a class="link" href="https://github.com/FarSightLi/minigrep"  target="_blank" rel="noopener"
+    >https://github.com/FarSightLi/minigrep</a></p>
 <h2 id="正文">正文
-</h2><h3 id="grep命令简介">grep命令简介
-</h3><blockquote>
-<p><strong>grep</strong>是一个最初用于<a class="link" href="https://zh.wikipedia.org/wiki/Unix"  target="_blank" rel="noopener"
-    >Unix</a>操作系统的<a class="link" href="https://zh.wikipedia.org/wiki/%e5%91%bd%e4%bb%a4%e8%a1%8c"  target="_blank" rel="noopener"
-    >命令行</a>工具。在给出文件列表或<a class="link" href="https://zh.wikipedia.org/wiki/%e6%a0%87%e5%87%86%e8%be%93%e5%85%a5"  target="_blank" rel="noopener"
-    >标准输入</a>后，grep会对匹配一个或多个<a class="link" href="https://zh.wikipedia.org/wiki/%e6%ad%a3%e5%88%99%e8%a1%a8%e8%be%be%e5%bc%8f"  target="_blank" rel="noopener"
-    >正则表达式</a>的文本进行搜索，并只输出匹配（或者不匹配）的行或文本。</p>
-<p>&ndash; wiki百科</p>
-</blockquote>
-<p>grep的一个经典用法是：</p>
+</h2><h3 id="功能拓展">功能拓展
+</h3><p>在上一篇中，我们初步完成了一个及其简陋的grep程序，在这一节中，我们将逐步拓展功能。</p>
+<p>在笔者日常工作中，-An(匹配列的下n行)， -an（匹配列的上下n行）、-Bn（匹配列的上n行）、-n（显示行号）、-i（忽略大小写）、-e（启用正则匹配）。在这篇中，我们就拓展这几种参数功能。</p>
+<h3 id="优化参数获取">优化参数获取
+</h3><p>在上一篇的原始版本中，我们使用这种 方式获得文件路径和搜索文本。这两个参数可以被视为”必须参数“（虽然filepath不一定必须，可以从输入流中获取，当然这是后话了）。而刚刚提到的诸如 -a等参数却可以使用任意个。所以我们通过从数组args的指定位置获取的方法就不适用了。这种参数称之为选项参数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-GO" data-lang="GO"><span class="line"><span class="cl"><span class="nx">filepath</span> <span class="p">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"> <span class="nx">searchText</span> <span class="p">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在golang中，选项参数可以用go的函数flag.CommandLine.Parse(args[1:])获取</p>
+<p>使用方法如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl">    <span class="c1">// 选项参数用flag解析
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">isIgnoreCase</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="s">&#34;i&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;ignore case&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">around</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Int</span><span class="p">(</span><span class="s">&#34;a&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;around line&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">isIncludeLineNumber</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="s">&#34;n&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;include line number&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nx">CommandLine</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>需要注意的是，flag.Int获得的是指针类型</p>
+<p>args从1号位切片是因为0号位是我们的程序名</p>
+<p>使用时，这些选项参数如这样使用：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">grep /data/test.txt searchContent
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go run main.go -i -a <span class="m">2</span> -n  <span class="c1">#{文件路径} #{搜索内容}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>其中，/data/test.txt 是要搜索的文件列表， searchContent是我们要搜索的内容。这是一种最基本的功能。</p>
-<h3 id="搭建基本框架">搭建基本框架
-</h3><p>我们的minigrep至少要先能获取到用户的目标 :文件列表及搜索内容 &ndash; 即参数列表。</p>
+</div><h4 id="结构体">结构体
+</h4><p>虽然golang的方法可以拥有多个返回值，但是解析完的多个参数并不适合直接返回，可以用结构体包装后返回</p>
+<p>结构体大致如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">cmdArgs</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">filepath</span>            <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">searchText</span>          <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">isIgnoreCase</span>        <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">isIncludeLineNumber</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">afterLine</span>           <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">beforeLine</span>          <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">aroundLine</span>          <span class="kt">int</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="实现思路">实现思路
+</h3><p>可以发现，这些参数中，-i、-e等选项是用于决定如何匹配文本的，而-a -n等参数实则是控制输出的。所以我们可以将其抽象为两个函数，一个用于在遍历每行内容时匹配文本，另一个用于在匹配后输出内容</p>
+<p>核心代码大致实现如下：</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -438,82 +497,113 @@
 </span><span class="lnt">21
 </span><span class="lnt">22
 </span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;fmt&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;os&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 读取参数列表
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">args</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 文件路径
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">filepath</span> <span class="o">:=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 搜索内容
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">searchText</span> <span class="o">:=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">content</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nb">panic</span><span class="p">(</span><span class="s">&#34;Usage: illegal file name&#34;</span><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 搜索文件并打印内容
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">searchFile</span><span class="p">(</span><span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">cmdArgs</span> <span class="nx">cmdArgs</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">content</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 假装已经实现了搜索功能
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;search %s for file: %s\n&#34;</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;file content: %s\n&#34;</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">searchText</span> <span class="o">:=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">searchText</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 提前编译正则
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">compile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nf">Compile</span><span class="p">(</span><span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stderr</span><span class="p">,</span> <span class="s">&#34;非法的正则表达式: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">lines</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">lineNum</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">lines</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 使用正则模式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">useRegex</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">compile</span><span class="p">.</span><span class="nf">MatchString</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nf">printLine</span><span class="p">(</span><span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">lines</span><span class="p">,</span> <span class="nx">lineNum</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">isIgnoreCase</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">searchText</span> <span class="p">=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">ToLower</span><span class="p">(</span><span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">line</span> <span class="p">=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">ToLower</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nf">printLine</span><span class="p">(</span><span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">lines</span><span class="p">,</span> <span class="nx">lineNum</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 根据参数打印匹配上的行
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">printLine</span><span class="p">(</span><span class="nx">cmdArgs</span> <span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">lines</span> <span class="p">[]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">lineNum</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">aroundLine</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">a</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">aroundLine</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">b</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">aroundLine</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">a</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">afterLine</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">b</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">beforeLine</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">start</span> <span class="o">:=</span> <span class="nx">lineNum</span> <span class="o">-</span> <span class="nx">a</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">start</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">start</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">end</span> <span class="o">:=</span> <span class="nx">lineNum</span> <span class="o">+</span> <span class="nx">b</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">length</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">lines</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">end</span> <span class="o">&gt;=</span> <span class="nx">length</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">end</span> <span class="p">=</span> <span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">index</span> <span class="o">:=</span> <span class="nx">start</span><span class="p">;</span> <span class="nx">index</span> <span class="o">&lt;=</span> <span class="nx">end</span><span class="p">;</span> <span class="nx">index</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">isIncludeLineNumber</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%d:%s\n&#34;</span><span class="p">,</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">lines</span><span class="p">[</span><span class="nx">index</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">lines</span><span class="p">[</span><span class="nx">index</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>现在我们来运行一下：</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">go run .<span class="se">\m</span>ain.go .<span class="se">\d</span>ata<span class="se">\t</span>est1.txt 语言
-</span></span><span class="line"><span class="cl">search 语言 <span class="k">for</span> file: .<span class="se">\d</span>ata<span class="se">\t</span>est1.txt
-</span></span><span class="line"><span class="cl">file content: Go 编程语言是一个开源项目，旨在提高程序员的生产力。
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">Go 表达力强、简洁、干净且高效。
-</span></span><span class="line"><span class="cl">其并发机制使编写能充分利用多核和联网机器的程序变得容易，而其新颖的类型系统则支持灵活且模块化的程序构建。
-</span></span><span class="line"><span class="cl">Go 可快速编译为机器代码，但具有垃圾回收的便利性和运行时反射的功能。
-</span></span><span class="line"><span class="cl">它是一种快速、静态类型、编译语言，但感觉像是一种动态类型、解释语言。
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>现在会打印search 语言 for file: .\data\test1.txt 以及完整的文件内容了，但是假如用户忘了输入他想要在哪个文件中搜索呢？</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS </span><span class="n">D:</span><span class="p">\</span><span class="nb">go-project</span><span class="p">\</span><span class="n">minigrep</span><span class="p">&gt;</span> <span class="n">go</span> <span class="n">run</span> <span class="p">.\</span><span class="n">main</span><span class="p">.</span><span class="py">go</span> <span class="n">语言</span>
-</span></span><span class="line"><span class="cl"><span class="n">panic</span><span class="err">:</span> <span class="n">runtime</span> <span class="n">error</span><span class="err">:</span> <span class="n">index</span> <span class="n">out</span> <span class="n">of</span> <span class="n">range</span> <span class="p">[</span><span class="mf">2</span><span class="p">]</span> <span class="n">with</span> <span class="n">length</span> <span class="mf">2</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="n">goroutine</span> <span class="mf">1</span> <span class="p">[</span><span class="no">running</span><span class="p">]</span><span class="err">:</span>
-</span></span><span class="line"><span class="cl"><span class="n">main</span><span class="p">.</span><span class="py">main</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">        <span class="n">D:</span><span class="p">/</span><span class="nb">go-project</span><span class="p">/</span><span class="n">minigrep</span><span class="p">/</span><span class="n">main</span><span class="p">.</span><span class="n">go</span><span class="err">:</span><span class="mf">15</span> <span class="p">+</span><span class="n">0x185</span>
-</span></span><span class="line"><span class="cl"><span class="n">exit</span> <span class="n">status</span> <span class="mf">2</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>oh no, 这是什么？我们作为开发人员当然能看懂这是什么，但是普通用户呢？因此我们除了需要真正实现搜索功能，还应该对这种异常情况做出更友好的提示。此外，我们所有的逻辑都杂糅在main方法中，这也不符合软件工程的最佳实践。</p>
-<h3 id="初步重构完成功能">初步重构，完成功能
-</h3><p>首先，我们需要将解析参数、读取文件内容、搜索内容这三个功能拆成不同的模块（func），此外，我们还得适当的处理panic。</p>
-<p>在java中，我们习惯用try-catch语法来捕获异常，再给出合理的错误提示。虽然go语言中也有类似的语法（recover），但是go语言更鼓励显式地处理这种预料之内的异常（即用func返回的error来判断）</p>
-<p>根据这些思路，我们写出了下面的代码：</p>
+</div><h3 id="单元测试">单元测试
+</h3><p>为了方便测试，匹配行后不再直接输出，而是返回数组，最后同意输出（由AI生成）</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -584,83 +674,80 @@
 </span><span class="lnt">66
 </span><span class="lnt">67
 </span><span class="lnt">68
-</span><span class="lnt">69
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;fmt&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;os&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;strings&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">args</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">filepath</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">content</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="nf">searchFile</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">),</span> <span class="nx">searchText</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">args</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">filepath</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">searchText</span> <span class="kt">string</span><span class="p">,</span> <span class="kt">error</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;illegal arguments, should be filepath and searchText&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 文件路径
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">filepath</span> <span class="p">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">searchText</span> <span class="p">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">filepath</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">searchFile</span><span class="p">(</span><span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">searchText</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// go中string类型的空值是&#34;&#34;(空字符串)而不是nil 
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="nx">content</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">lines</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">lines</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">filepath</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">string</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 检查文件是否存在
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Stat</span><span class="p">(</span><span class="nx">filepath</span><span class="p">);</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsNotExist</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;file not found&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 检查是否是目录
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">info</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Stat</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">info</span><span class="p">.</span><span class="nf">IsDir</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;is a directory, not a file&#34;</span><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">TestMatchLines</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">name</span>     <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">content</span>  <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">cmdArgs</span>  <span class="nx">cmdArgs</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">expected</span> <span class="p">[]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;普通匹配&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">content</span><span class="p">:</span> <span class="s">&#34;apple banana\ncherry apple\ndate&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">cmdArgs</span><span class="p">:</span> <span class="nx">cmdArgs</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">searchText</span><span class="p">:</span> <span class="s">&#34;apple&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">expected</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;apple banana&#34;</span><span class="p">,</span> <span class="s">&#34;cherry apple&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;忽略大小写&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">content</span><span class="p">:</span> <span class="s">&#34;Apple banana\nCHERRY APPLE&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">cmdArgs</span><span class="p">:</span> <span class="nx">cmdArgs</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">searchText</span><span class="p">:</span>   <span class="s">&#34;apple&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">isIgnoreCase</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">expected</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;Apple banana&#34;</span><span class="p">,</span> <span class="s">&#34;CHERRY APPLE&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;正则匹配以 a 开头&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">content</span><span class="p">:</span> <span class="s">&#34;apple banana\ngrape apple\nant&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">cmdArgs</span><span class="p">:</span> <span class="nx">cmdArgs</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">searchText</span><span class="p">:</span> <span class="s">&#34;^[aA]&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">useRegex</span><span class="p">:</span>   <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">expected</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;apple banana&#34;</span><span class="p">,</span> <span class="s">&#34;ant&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;上下文两行&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">content</span><span class="p">:</span> <span class="s">&#34;line1\nline2\napple\nline4\nline5&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">cmdArgs</span><span class="p">:</span> <span class="nx">cmdArgs</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">searchText</span><span class="p">:</span> <span class="s">&#34;apple&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">aroundLine</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">expected</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;line1&#34;</span><span class="p">,</span> <span class="s">&#34;line2&#34;</span><span class="p">,</span> <span class="s">&#34;apple&#34;</span><span class="p">,</span> <span class="s">&#34;line4&#34;</span><span class="p">,</span> <span class="s">&#34;line5&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">name</span><span class="p">:</span>    <span class="s">&#34;显示行号&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">content</span><span class="p">:</span> <span class="s">&#34;hello\nworld\nhello again&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">cmdArgs</span><span class="p">:</span> <span class="nx">cmdArgs</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">searchText</span><span class="p">:</span>          <span class="s">&#34;hello&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">isIncludeLineNumber</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="p">},</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">expected</span><span class="p">:</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;0:hello&#34;</span><span class="p">,</span> <span class="s">&#34;2:hello again&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 读取文件内容
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsPermission</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;permission denied&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">        <span class="p">}</span>
-</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">results</span> <span class="o">:=</span> <span class="nf">MatchLines</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">content</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">cmdArgs</span><span class="p">,</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="kd">struct</span><span class="p">{}))</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">results</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">expected</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;预期 %d 行，实际 %d 行&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">expected</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="nx">results</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">results</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="nx">results</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">!=</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">expected</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;第 %d 行期望 %q，实际 %q&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">expected</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">results</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">})</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">),</span> <span class="kc">nil</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h3 id="添加单元测试">添加单元测试
-</h3><p>我们可以添加一些单元测试，用以初步验证我们的程序是否有错误。（以下测试代码用AI生成）</p>
-<div class="highlight"><div class="chroma">
+</div><h2 id="代码全文">代码全文
+</h2><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">  1
 </span><span class="lnt">  2
@@ -773,169 +860,289 @@
 </span><span class="lnt">109
 </span><span class="lnt">110
 </span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">minigrep</span>
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;errors&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;flag&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;fmt&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="s">&#34;io&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;regexp&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="s">&#34;strings&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="s">&#34;testing&#34;</span>
 </span></span><span class="line"><span class="cl"><span class="p">)</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">// TestParseArgs 测试解析命令行参数的功能
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">TestParseArgs</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 保存原始的命令行参数
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">oldArgs</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span>
-</span></span><span class="line"><span class="cl">    <span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span> <span class="p">=</span> <span class="nx">oldArgs</span> <span class="p">}()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 测试正常情况
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;minigrep&#34;</span><span class="p">,</span> <span class="s">&#34;test.txt&#34;</span><span class="p">,</span> <span class="s">&#34;hello&#34;</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">filepath</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">args</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected no error, but got %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">filepath</span> <span class="o">!=</span> <span class="s">&#34;test.txt&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected filepath to be &#39;test.txt&#39;, but got %v&#34;</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">content</span> <span class="o">:=</span> <span class="s">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 从输入流中读取
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">filepath</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">bytes</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdin</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;读取输入流出错&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">content</span> <span class="p">=</span> <span class="nb">string</span><span class="p">(</span><span class="nx">bytes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">contentByte</span><span class="p">,</span> <span class="nx">e</span> <span class="o">:=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">e</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">content</span> <span class="p">=</span> <span class="nx">contentByte</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">searchText</span> <span class="o">!=</span> <span class="s">&#34;hello&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected searchText to be &#39;hello&#39;, but got %v&#34;</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 测试参数数量错误的情况
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span> <span class="p">=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;minigrep&#34;</span><span class="p">,</span> <span class="s">&#34;test.txt&#34;</span><span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">_</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Expected error for incorrect number of arguments, but got none&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">!</span><span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(),</span> <span class="s">&#34;illegal arguments&#34;</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error message containing &#39;illegal arguments&#39;, but got &#39;%v&#39;&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">// TestSearchFile 测试在文件内容中搜索文本的功能
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">TestSearchFile</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 测试包含搜索文本的情况
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">content</span> <span class="o">:=</span> <span class="s">&#34;hello world\nthis is a test\ngoodbye world&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">searchText</span> <span class="o">:=</span> <span class="s">&#34;hello&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">expected</span> <span class="o">:=</span> <span class="s">&#34;hello world\n&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 重定向标准输出以便捕获
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">r</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Pipe</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">stdout</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">w</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nf">searchFile</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">w</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">stdout</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 读取输出
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">result</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">string</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="o">!=</span> <span class="nx">expected</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected output &#39;%s&#39;, but got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nx">expected</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">result</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 测试不包含搜索文本的情况
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">content</span> <span class="p">=</span> <span class="s">&#34;hello world\nthis is a test\ngoodbye world&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">searchText</span> <span class="p">=</span> <span class="s">&#34;missing&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">r</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Pipe</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">stdout</span> <span class="p">=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">w</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="nf">searchFile</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">w</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span> <span class="p">=</span> <span class="nx">stdout</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 读取输出
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">result</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected no output, but got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">result</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">printedLine</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">line</span> <span class="o">:=</span> <span class="nf">MatchLines</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">printedLine</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">s</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">line</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="c1">// TestReadFile 测试读取文件功能
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">TestReadFile</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="c1">// 创建临时测试文件
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">dir</span> <span class="o">:=</span> <span class="nx">t</span><span class="p">.</span><span class="nf">TempDir</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">testFile</span> <span class="o">:=</span> <span class="nx">dir</span> <span class="o">+</span> <span class="s">&#34;/test.txt&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">data</span> <span class="o">:=</span> <span class="s">&#34;hello world\nthis is a test\ngoodbye world&#34;</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">os</span><span class="p">.</span><span class="nf">WriteFile</span><span class="p">(</span><span class="nx">testFile</span><span class="p">,</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">data</span><span class="p">),</span> <span class="mo">0644</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">cmdArgs</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">filepath</span>            <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">searchText</span>          <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">isIgnoreCase</span>        <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">isIncludeLineNumber</span> <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">afterLine</span>           <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">beforeLine</span>          <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">aroundLine</span>          <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">useRegex</span>            <span class="kt">bool</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 测试正常读取文件
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">testFile</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 解析命令行参数
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">parseArgs</span><span class="p">(</span><span class="nx">args</span> <span class="p">[]</span><span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">cmdArgs</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 选项参数用flag解析
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">isIgnoreCase</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="s">&#34;i&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;ignore case&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">around</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Int</span><span class="p">(</span><span class="s">&#34;a&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;around line&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">before</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Int</span><span class="p">(</span><span class="s">&#34;B&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;before line&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">after</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Int</span><span class="p">(</span><span class="s">&#34;A&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#34;after line&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">isIncludeLineNumber</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="s">&#34;n&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;include line number&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">useRegex</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="s">&#34;e&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;use regex module&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nx">CommandLine</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected no error, but got %v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">content</span> <span class="o">!=</span> <span class="nx">data</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected content &#39;%s&#39;, but got &#39;%s&#39;&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">content</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nx">cmdArgs</span><span class="p">{},</span> <span class="nx">err</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 测试读取不存在的文件
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">dir</span> <span class="o">+</span> <span class="s">&#34;/nonexistent.txt&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Expected error for nonexistent file, but got none&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">!</span><span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(),</span> <span class="s">&#34;file not found&#34;</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error message containing &#39;file not found&#39;, but got &#39;%v&#39;&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 非选项参数用普通方式解析
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">nonFlagArgs</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Args</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 只包含了搜索内容
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">var</span> <span class="nx">searchText</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">filepath</span> <span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nonFlagArgs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">filepath</span> <span class="p">=</span> <span class="s">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">searchText</span> <span class="p">=</span> <span class="nx">nonFlagArgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nonFlagArgs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">filepath</span> <span class="p">=</span> <span class="nx">nonFlagArgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">searchText</span> <span class="p">=</span> <span class="nx">nonFlagArgs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nx">cmdArgs</span><span class="p">{},</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;参数错误,标准参数只允许有文件路径和搜索内容&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl">    <span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="c1">// 测试读取目录
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">dir</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="s">&#34;Expected error for reading directory, but got none&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">!</span><span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(),</span> <span class="s">&#34;is a directory&#34;</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;Expected error message containing &#39;is a directory&#39;, but got &#39;%v&#39;&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">cmdArgs</span><span class="p">{</span><span class="nx">filepath</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">searchText</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="nx">isIgnoreCase</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="nx">isIncludeLineNumber</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="nx">after</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="nx">before</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="nx">around</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="nx">useRegex</span><span class="p">},</span> <span class="kc">nil</span>
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>可以看到：我们的代码通过了测试</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span><span class="lnt">7
-</span><span class="lnt">8
-</span><span class="lnt">9
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="nb">PS </span><span class="n">D:</span><span class="p">\</span><span class="nb">go-project</span><span class="p">\</span><span class="n">minigrep</span><span class="p">&gt;</span> <span class="n">go</span> <span class="n">test</span> <span class="n">-v</span>
-</span></span><span class="line"><span class="cl"><span class="p">===</span> <span class="n">RUN</span>   <span class="n">TestParseArgs</span>
-</span></span><span class="line"><span class="cl"><span class="p">---</span> <span class="n">PASS</span><span class="err">:</span> <span class="n">TestParseArgs</span> <span class="p">(</span><span class="mf">0</span><span class="p">.</span><span class="n">00s</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">===</span> <span class="n">RUN</span>   <span class="n">TestSearchFile</span>
-</span></span><span class="line"><span class="cl"><span class="p">---</span> <span class="n">PASS</span><span class="err">:</span> <span class="n">TestSearchFile</span> <span class="p">(</span><span class="mf">0</span><span class="p">.</span><span class="n">00s</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">===</span> <span class="n">RUN</span>   <span class="n">TestReadFile</span>
-</span></span><span class="line"><span class="cl"><span class="p">---</span> <span class="n">PASS</span><span class="err">:</span> <span class="n">TestReadFile</span> <span class="p">(</span><span class="mf">0</span><span class="p">.</span><span class="n">00s</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="n">PASS</span>
-</span></span><span class="line"><span class="cl"><span class="n">ok</span>      <span class="n">minigrep</span>        <span class="mf">0</span><span class="p">.</span><span class="n">160s</span>
-</span></span></code></pre></td></tr></table>
-</div>
-</div><p>现在，我们可以放心将这个程序交给用户去使用啦（尽管功能简陋），但是我们要如何让用户能使用这个程序呢？</p>
-<h3 id="打包为可执行文件">打包为可执行文件
-</h3><p>我们可以用build命令打包为exe，以便用户在一个没有go语言环境的命令行中也能直接执行</p>
-<div class="highlight"><div class="chroma">
-<table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt">1
-</span><span class="lnt">2
-</span><span class="lnt">3
-</span><span class="lnt">4
-</span><span class="lnt">5
-</span><span class="lnt">6
-</span></code></pre></td>
-<td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-powershell" data-lang="powershell"><span class="line"><span class="cl"><span class="p">//</span> <span class="n">打包为exe</span>
-</span></span><span class="line"><span class="cl"><span class="n">go</span> <span class="n">build</span> <span class="n">-o</span> <span class="n">minigrep</span><span class="p">.</span><span class="py">exe</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="p">//</span> <span class="n">使用用例</span>
-</span></span><span class="line"><span class="cl"><span class="nb">PS </span><span class="n">D:</span><span class="p">\</span><span class="nb">go-project</span><span class="p">\</span><span class="n">minigrep</span><span class="p">&gt;</span> <span class="p">.\</span><span class="n">minigrep</span><span class="p">.</span><span class="py">exe</span> <span class="p">.\</span><span class="n">data</span><span class="p">\</span><span class="n">test1</span><span class="p">.</span><span class="py">txt</span> <span class="n">功能</span>
-</span></span><span class="line"><span class="cl"><span class="n">Go</span> <span class="n">可快速编译为机器代码</span><span class="err">，</span><span class="n">但具有垃圾回收的便利性和运行时反射的功能</span><span class="err">。</span>
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 搜索文件并打印内容
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">MatchLines</span><span class="p">(</span><span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">cmdArgs</span> <span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">printedLine</span> <span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="kd">struct</span><span class="p">{})</span> <span class="p">[]</span><span class="kt">string</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">content</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">searchText</span> <span class="o">:=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">searchText</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 提前编译正则
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">var</span> <span class="nx">compile</span> <span class="o">*</span><span class="nx">regexp</span><span class="p">.</span><span class="nx">Regexp</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">useRegex</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">c</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nf">Compile</span><span class="p">(</span><span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stderr</span><span class="p">,</span> <span class="s">&#34;非法的正则表达式: %v\n&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">compile</span> <span class="p">=</span> <span class="nx">c</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">matchedLines</span> <span class="p">[]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">lines</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="s">&#34;\n&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">lineNum</span><span class="p">,</span> <span class="nx">line</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">lines</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 使用正则模式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">useRegex</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">compile</span><span class="p">.</span><span class="nf">MatchString</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">matchedLines</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">matchedLines</span><span class="p">,</span> <span class="nf">formatLine</span><span class="p">(</span><span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">lines</span><span class="p">,</span> <span class="nx">lineNum</span><span class="p">,</span> <span class="nx">printedLine</span><span class="p">)</span><span class="o">...</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">isIgnoreCase</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">searchText</span> <span class="p">=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">ToLower</span><span class="p">(</span><span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">searchText</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">line</span> <span class="p">=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">ToLower</span><span class="p">(</span><span class="nx">line</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">line</span><span class="p">,</span> <span class="nx">searchText</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">matchedLines</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">matchedLines</span><span class="p">,</span> <span class="nf">formatLine</span><span class="p">(</span><span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">lines</span><span class="p">,</span> <span class="nx">lineNum</span><span class="p">,</span> <span class="nx">printedLine</span><span class="p">)</span><span class="o">...</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">matchedLines</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * 根据参数打印匹配上的行
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">formatLine</span><span class="p">(</span><span class="nx">cmdArgs</span> <span class="nx">cmdArgs</span><span class="p">,</span> <span class="nx">lines</span> <span class="p">[]</span><span class="kt">string</span><span class="p">,</span> <span class="nx">lineNum</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">printedLine</span> <span class="kd">map</span><span class="p">[</span><span class="kt">int</span><span class="p">]</span><span class="kd">struct</span><span class="p">{})</span> <span class="p">[]</span><span class="kt">string</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">matchedLines</span> <span class="p">[]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">var</span> <span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">aroundLine</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">a</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">aroundLine</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">b</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">aroundLine</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">a</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">afterLine</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">b</span> <span class="p">=</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">beforeLine</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">start</span> <span class="o">:=</span> <span class="nx">lineNum</span> <span class="o">-</span> <span class="nx">b</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">start</span> <span class="p">&lt;</span> <span class="mi">0</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">start</span> <span class="p">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">end</span> <span class="o">:=</span> <span class="nx">lineNum</span> <span class="o">+</span> <span class="nx">a</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">length</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">lines</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">end</span> <span class="o">&gt;=</span> <span class="nx">length</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">end</span> <span class="p">=</span> <span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="nx">index</span> <span class="o">:=</span> <span class="nx">start</span><span class="p">;</span> <span class="nx">index</span> <span class="o">&lt;=</span> <span class="nx">end</span><span class="p">;</span> <span class="nx">index</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 如果打印过了就不再打印
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">exist</span> <span class="o">:=</span> <span class="nx">printedLine</span><span class="p">[</span><span class="nx">index</span><span class="p">];</span> <span class="nx">exist</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">cmdArgs</span><span class="p">.</span><span class="nx">isIncludeLineNumber</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">matchedLines</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">matchedLines</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%d:%s&#34;</span><span class="p">,</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">lines</span><span class="p">[</span><span class="nx">index</span><span class="p">]))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nx">matchedLines</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">matchedLines</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="nx">lines</span><span class="p">[</span><span class="nx">index</span><span class="p">]))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="nx">printedLine</span><span class="p">[</span><span class="nx">index</span><span class="p">]</span> <span class="p">=</span> <span class="kd">struct</span><span class="p">{}{}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">matchedLines</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">readFile</span><span class="p">(</span><span class="nx">filepath</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">string</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 检查文件是否存在
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">info</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Stat</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsNotExist</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;找不到 %s 文件&#34;</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 检查是否是目录
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">info</span><span class="p">.</span><span class="nf">IsDir</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;%s 是一个目录而非文件&#34;</span><span class="p">,</span> <span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 读取文件内容
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="nx">filepath</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nx">os</span><span class="p">.</span><span class="nf">IsPermission</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;权限被拒绝&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">string</span><span class="p">(</span><span class="nx">content</span><span class="p">),</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="总结">总结
-</h2><p>通过这个简短的程序，我们初步理解了golang中的func、异常处理、文件系统、赋值、流程控制、字符串处理等基础语法。然而，很多golang的特性、语法我们都没有涉及。此外，这个minigrep甚至不能称之为玩具，功能简陋至极。因此，在下一篇文章中，我们会逐步拓展功能，同时也会涉及更多新语法。</p>
+</h2><p>通过这次优化，我们用到了更多golang的特性，比如用map模拟set、读取参数中的选项参数、正则使用 以及 数组添加等。</p>
+<p>但是稍微有些经验的读者都能发现一个严重问题 ：<mark>内存大爆炸</mark></p>
+<p>我们的输入流、从文件读出来的内容都放到了内存中，这是一个严重隐患，我们将在下一篇中优化此项</p>
 
 </section>
 
