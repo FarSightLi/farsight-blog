@@ -2,25 +2,32 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>个人笔记 on 骆灵上的个人网站</title>
-        <link>http://localhost:1313/tags/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/</link>
+        <link>//ind:1313/tags/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/</link>
         <description>Recent content in 个人笔记 on 骆灵上的个人网站</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en</language>
         <copyright>骆灵上</copyright>
-        <lastBuildDate>Fri, 16 May 2025 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 16 May 2025 00:00:00 +0000</lastBuildDate><atom:link href="//ind:1313/tags/%E4%B8%AA%E4%BA%BA%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>操作系统（南京大学蒋炎炎）--个人学习笔记</title>
-        <link>http://localhost:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <link>//ind:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
         <pubDate>Fri, 16 May 2025 00:00:00 +0000</pubDate>
         
-        <guid>http://localhost:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <guid>//ind:1313/p/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E8%92%8B%E7%82%8E%E7%82%8E--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
         <description>&lt;h2 id=&#34;8-终端和进程组unix-shell&#34;&gt;8 终端和进程组、unix shell
-&lt;/h2&gt;&lt;h2 id=&#34;13-多线程编程入门&#34;&gt;13 多线程编程入门
+&lt;/h2&gt;&lt;p&gt;终端是从打字机、电报等演进而来的&lt;/p&gt;
+&lt;p&gt;现在的终端其实是pts-&amp;gt;伪终端pseudo terminal，作为一个中间层，连接了真正的终端和输入设备&lt;/p&gt;
+&lt;p&gt;不管是系统启动还是远程登陆，都会分配一个tty&lt;/p&gt;
+&lt;p&gt;终端只传输字符，不管ctrl+c还是d&amp;hellip;.（都代表不同的控制信号），都发给操作系统&lt;/p&gt;
+&lt;p&gt;ctrl+z退出程序，放在后台跑，相当于最小化。而jobs可以查看所有运行中的后台程序， fg %#{id} 即可恢复&lt;/p&gt;
+&lt;p&gt;操作系统维护了终端与对应的运行程序group的关系。每个进程都有一个sessionid，关联了终端。还有一个小分组，process group id，只有一个前台进程组，ctrl+c时关闭所有前台进程组。&lt;/p&gt;
+&lt;p&gt;这里讨论了：这是一种遗留的历史问题，可以设计的更简洁，只需要保留进程组就行。还有Android的实现机制&lt;/p&gt;
+&lt;h2 id=&#34;13-多线程编程入门&#34;&gt;13 多线程编程入门
 &lt;/h2&gt;&lt;p&gt;&amp;hellip;spawn后，共享内存不变，新增新的栈帧&lt;/p&gt;
 &lt;p&gt;并发vs并行&lt;/p&gt;
 &lt;p&gt;证明了全局变量是共享的、证明栈的大小（不断递归使用栈空间）&lt;/p&gt;
 &lt;p&gt;多线程打破了确定性 -&amp;gt; 经典的并发支付、并发sum++&lt;/p&gt;
 &lt;p&gt;一个小题目：并发执行三个sum. ,sum的最小值&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;http://localhost:1313/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F_md_files/f600f690-3c94-11f0-b8e7-657dd91a99a2_20250529215814.jpeg?v=1&amp;amp;type=image&amp;amp;token=V1%253APlTHswpyJ4TAwJO0BUEAJKomA_NiMN0hAjYUbPCPffU&#34;
+&lt;p&gt;&lt;img src=&#34;//ind:1313/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F_md_files/f600f690-3c94-11f0-b8e7-657dd91a99a2_20250529215814.jpeg?v=1&amp;amp;type=image&amp;amp;token=V1%253APlTHswpyJ4TAwJO0BUEAJKomA_NiMN0hAjYUbPCPffU&#34;
 	
 	
 	
@@ -83,14 +90,21 @@
 &lt;p&gt;编译器会优化程序 编译器假设，没有什么会随意更改程序状态，那么只要优化前后的程序，在程序调用层面上等价，那么语句其实是可以随意调换删除的&lt;/p&gt;
 &lt;p&gt;那么编写程序时，大部分时候希望编译器优化的，毕竟需要性能，那么有两个不推荐的路子：1.插入不可优化的代码块。2.使用volatile关键字&lt;/p&gt;
 &lt;p&gt;况且内存也不是真的sharded的，由于物理上的距离、读写的速度，A线程上的内存和B线程上的内存是很有可能不一致的（因为为了保证快，操作系统读取时，是立马返回的，而不是像其他内存块确认是否有修改）&lt;/p&gt;
+&lt;h2 id=&#34;27-虚拟机容器微服务&#34;&gt;27 虚拟机、容器、微服务
+&lt;/h2&gt;&lt;p&gt;一开始，是Full System Emulation，写一个程序，模拟整个操作系统。有致命缺陷：性能非常慢&lt;/p&gt;
+&lt;p&gt;实际上，我们的应用大部分都不在内核上运行。所以可以将虚拟机的用户态部分直接放到宿主机上运行（将物理页映射到虚拟页），只有涉及到系统调用时，才放到虚拟机中执行。而发展到今天，cpu已经自支持虚拟化了，虚拟机和宿主机用的不同页表，syscall直接运行在虚拟页表上。&lt;/p&gt;
+&lt;p&gt;虚拟机可以保存系统状态，一旦保存，可以做时空转换。虚拟机的初始状态是确定的，是一个初始状态的虚拟机，可以将所有状态转换都记录下来&lt;/p&gt;
+&lt;p&gt;然而，没必要用一个模拟程序来模拟操作系统，操作系统可以自己虚拟化自己。加一个osid，即可区分不同进程树（一个进程可以fork另外一棵进程树）。这就是linux的namespaces，有一些东西需要区分，如mnt、pid、cgroup、net、user、time、ipc、time等。cgroup控制了不同namespaces的资源上限&lt;/p&gt;
+&lt;p&gt;这其实也就是容器，开销更小，只是容器安全性略低&lt;/p&gt;
+&lt;p&gt;甚至可以更进一步，连容器概念都不要了：serverless，function as  a service。直接将函数放在云上。&lt;/p&gt;
 </description>
         </item>
         <item>
         <title>计算机网络(中科大郑烇)--个人学习笔记</title>
-        <link>http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <link>//ind:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
         <pubDate>Thu, 01 May 2025 00:00:00 +0000</pubDate>
         
-        <guid>http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <guid>//ind:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
         <description>&lt;h1 id=&#34;2-应用层&#34;&gt;2 应用层
 &lt;/h1&gt;&lt;h2 id=&#34;21-web和http&#34;&gt;2.1 Web和Http
 &lt;/h2&gt;&lt;p&gt;对http这一套还是非常了解的了。

@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>计网 on 骆灵上的个人网站</title>
-        <link>http://localhost:1313/tags/%E8%AE%A1%E7%BD%91/</link>
+        <link>//ind:1313/tags/%E8%AE%A1%E7%BD%91/</link>
         <description>Recent content in 计网 on 骆灵上的个人网站</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en</language>
         <copyright>骆灵上</copyright>
-        <lastBuildDate>Thu, 01 May 2025 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/%E8%AE%A1%E7%BD%91/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Thu, 01 May 2025 00:00:00 +0000</lastBuildDate><atom:link href="//ind:1313/tags/%E8%AE%A1%E7%BD%91/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>计算机网络(中科大郑烇)--个人学习笔记</title>
-        <link>http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <link>//ind:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
         <pubDate>Thu, 01 May 2025 00:00:00 +0000</pubDate>
         
-        <guid>http://localhost:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <guid>//ind:1313/p/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E4%B8%AD%E7%A7%91%E5%A4%A7%E9%83%91%E7%83%87--%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
         <description>&lt;h1 id=&#34;2-应用层&#34;&gt;2 应用层
 &lt;/h1&gt;&lt;h2 id=&#34;21-web和http&#34;&gt;2.1 Web和Http
 &lt;/h2&gt;&lt;p&gt;对http这一套还是非常了解的了。
