@@ -14,7 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: recursive  # 包含主题子模块
+          submodules: false
 
       # 2. 安装 Hugo 扩展版
       - name: Setup Hugo
