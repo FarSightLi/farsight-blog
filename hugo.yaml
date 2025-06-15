@@ -1,6 +1,6 @@
 baseurl: https://farsightli.github.io/
 languageCode: zh-cn
-theme: hugo-theme-stack
+theme: my-stack
 title: 骆灵上的个人网站
 copyright: 骆灵上
 
